@@ -4,6 +4,10 @@ import './App.css';
 
 import Header from './Header/Header';
 import Compose from './Compose/Compose';
+import axios from 'axios';
+import Post from "./Post/Post"
+
+const baseURL = 'https://practiceapi.devmountain.com/api'
 
 class App extends Component {
   constructor() {
@@ -17,21 +21,46 @@ class App extends Component {
     this.deletePost = this.deletePost.bind( this );
     this.createPost = this.createPost.bind( this );
   }
-  
+
   componentDidMount() {
+    console.log('Did mount')
+    axios.get(`${baseURL}/posts`).then(res => {
+      console.log(res)
+      this.setState({
+        posts: res.data
+      })
+    })
 
   }
 
-  updatePost() {
-  
+  updatePost(id, text) {
+    axios.put(`${baseURL}/posts?id=${id}`, {text}).then(res => {
+      this.setState({
+        posts: res.data
+      })
+    }).catch(err => console.log(err))
   }
 
-  deletePost() {
-
+  deletePost(id) {
+    axios.delete(`${baseURL}/posts?id=${id}`).then(res => {
+      this.setState({
+        posts: res.data
+      })
+    })
   }
 
-  createPost() {
+  createPost(text) {
+    axios.post(`${baseURL}/posts`, {text}).then(res => {
+      this.setState({
+        posts: res.data
+      })
+    })
+  }
 
+  filterPost = (filtered) => {
+    this.setState({
+      posts: filtered
+    })
   }
 
   render() {
@@ -39,12 +68,22 @@ class App extends Component {
 
     return (
       <div className="App__parent">
-        <Header />
+        <Header filteredFn={this.filterPost}/>
 
         <section className="App__content">
 
-          <Compose />
-          
+          <Compose createPostFn={this.createPost}/>
+          {
+            posts.map(posts => (
+              <Post key={posts.id}
+                    text={posts.text}
+                    date={posts.date}
+                    id={posts.id}
+                    updatePostFn={this.updatePost}
+                    deletePostFn={this.deletePost}
+                    />
+            ))
+          }
         </section>
       </div>
     );
